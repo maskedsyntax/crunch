@@ -27,3 +27,5 @@ target
 Agents.md
 *.crunch
 extracted/
+extracted*/
+*.crunch

@@ -1,6 +1,8 @@
 mod bit_io;
 mod huffman;
 mod archive;
+mod benchmark;
+mod stats;
 use clap::{Parser, Subcommand};
 use anyhow::Result;
 use std::path::PathBuf;
@@ -55,6 +57,18 @@ enum Commands {
         #[arg(short, long)]
         input: PathBuf,
     },
+    /// Benchmark against ZIP
+    Bench {
+        /// Input file to benchmark
+        #[arg(short, long)]
+        input: PathBuf,
+    },
+    /// Show file statistics (frequency analysis)
+    Stats {
+        /// Input file to analyze
+        #[arg(short, long)]
+        input: PathBuf,
+    },
 }
 
 fn main() -> Result<()> {
@@ -62,12 +76,12 @@ fn main() -> Result<()> {
 
     match cli.command {
         Commands::Compress { input, output, algorithm } => {
-            println!("Compressing {:?} using {} algorithm...", input, algorithm);
             let out_path = output.unwrap_or_else(|| {
                 let mut p = input.clone();
                 p.set_extension("crunch");
                 p
             });
+            println!("Compressing {:?} using {} algorithm...", input, algorithm);
             archive::Archiver::compress_files(vec![input], out_path)?;
         }
         Commands::Decompress { input, output } => {
@@ -83,10 +97,26 @@ fn main() -> Result<()> {
             println!("Listing contents of archive {:?}...", input);
             let mut file = std::fs::File::open(input)?;
             let header = archive::ArchiveHeader::read_from(&mut file)?;
-            println!("{:<20} {:<15} {:<15} {:<10}", "Name", "Original Size", "Compressed", "Method");
+            println!("{:<25} {:<15} {:<15} {:<10}", "Name", "Original", "Compressed", "Method");
             for meta in header.files {
-                println!("{:<20} {:<15} {:<15} {:?}", meta.name, meta.original_size, meta.compressed_size, meta.compression_type);
+                println!("{:<25} {:<15} {:<15} {:?}", meta.name, meta.original_size, meta.compressed_size, meta.compression_type);
             }
+        }
+        Commands::Bench { input } => {
+            println!("Benchmarking {:?} against ZIP...", input);
+            let res = benchmark::run_benchmark(input)?;
+            println!("\nBenchmark Results for '{}':", res.name);
+            println!("{:<20} {:<20} {:<20}", "Metric", "Crunch (Huffman)", "ZIP (Deflate)");
+            println!("{:-<60}", "");
+            println!("{:<20} {:<20} {:<20}", "Size (bytes)", res.crunch_size, res.zip_size);
+            println!("{:<20} {:<20?} {:<20?}", "Time", res.crunch_time, res.zip_time);
+            let crunch_ratio = (res.crunch_size as f64 / res.original_size as f64) * 100.0;
+            let zip_ratio = (res.zip_size as f64 / res.original_size as f64) * 100.0;
+            println!("{:<20} {:<20.2}% {:<20.2}%", "Ratio", crunch_ratio, zip_ratio);
+        }
+        Commands::Stats { input } => {
+            println!("Frequency Analysis for {:?}:", input);
+            stats::print_frequency_histogram(input)?;
         }
     }
 

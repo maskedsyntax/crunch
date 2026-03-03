@@ -34,9 +34,9 @@
 - [ ] Integration with Huffman (DEFLATE-lite) if time permits.
 
 ## 7. Progress & Visualization
-- [ ] Real-time progress bars using `indicatif`.
+- [x] Real-time progress bars using `indicatif`.
 - [ ] Terminal-based frequency visualization (histograms).
 
 ## 8. Verification & Benchmarking
-- [ ] Automatic checksum verification during decompression.
-- [ ] Benchmarking utility to compare against standard ZIP implementations.
+- [x] Automatic checksum verification during decompression.
+- [x] Benchmarking utility to compare against standard ZIP implementations.

@@ -69,12 +69,15 @@ impl ArchiveHeader {
 
 pub struct Archiver;
 
+use indicatif::{ProgressBar, ProgressStyle, MultiProgress};
+
 impl Archiver {
     pub fn compress_files<P: AsRef<Path>>(inputs: Vec<P>, output: P) -> Result<()> {
         let mut file_metas = Vec::new();
         let mut compressed_data = Vec::new();
         let mut all_files = Vec::new();
 
+        println!("Collecting files...");
         for input in inputs {
             let path = input.as_ref();
             if path.is_file() {
@@ -84,7 +87,14 @@ impl Archiver {
             }
         }
 
+        let multi = MultiProgress::new();
+        let overall_pb = multi.add(ProgressBar::new(all_files.len() as u64));
+        overall_pb.set_style(ProgressStyle::default_bar()
+            .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} files ({eta})")?
+            .progress_chars("#>-"));
+
         for (full_path, relative_name) in all_files {
+            overall_pb.set_message(format!("Compressing {}", relative_name));
             let mut file = File::open(&full_path)?;
             let mut content = Vec::new();
             file.read_to_end(&mut content)?;
@@ -119,7 +129,9 @@ impl Archiver {
 
             file_metas.push(meta);
             compressed_data.push(compressed_buf);
+            overall_pb.inc(1);
         }
+        overall_pb.finish_with_message("Compression complete");
 
         let header = ArchiveHeader::new(file_metas);
         let mut out_file = File::create(output)?;
@@ -157,7 +169,13 @@ impl Archiver {
             std::fs::create_dir_all(out_dir)?;
         }
 
+        let pb = ProgressBar::new(header.files.len() as u64);
+        pb.set_style(ProgressStyle::default_bar()
+            .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} files ({eta})")?
+            .progress_chars("#>-"));
+
         for meta in header.files {
+            pb.set_message(format!("Extracting {}", meta.name));
             let mut compressed_buf = vec![0u8; meta.compressed_size as usize];
             in_file.read_exact(&mut compressed_buf)?;
 
@@ -184,7 +202,9 @@ impl Archiver {
                 }
                 _ => return Err(anyhow!("Unsupported compression type")),
             }
+            pb.inc(1);
         }
+        pb.finish_with_message("Extraction complete");
 
         Ok(())
     }
