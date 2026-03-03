@@ -19,14 +19,14 @@
 - [x] Canonical Huffman coding for efficient tree storage in the archive.
 
 ## 4. Archive Format & Metadata
-- [x] Define the `crunch` file format (Header, Metadata, Compressed Data).
-- [x] Store checksums (CRC32) for integrity verification.
-- [x] Support for multiple compression algorithms (selectable via CLI).
+- [ ] Define the `crunch` file format (Header, Metadata, Compressed Data).
+- [ ] Store checksums (CRC32) for integrity verification.
+- [ ] Support for multiple compression algorithms (selectable via CLI).
 
 ## 5. Multi-File Archiving
-- [x] Recursive directory traversal (basic implementation in Archiver).
-- [x] Metadata storage for file names, sizes, and relative paths.
-- [x] Archiving multiple files into a single `.crunch` file.
+- [ ] Recursive directory traversal.
+- [ ] Metadata storage for file names, sizes, and relative paths.
+- [ ] Archiving multiple files into a single `.crunch` file.
 
 ## 6. LZ77 (Dictionary-Based Compression)
 - [ ] Sliding window match finding.
