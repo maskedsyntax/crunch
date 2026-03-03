@@ -1,14 +1,14 @@
 # Crunch: Custom File Compressor & Archiver - Development Plan
 
 ## 1. Project Initialization
-- [ ] Initialize Cargo project.
-- [ ] Set up basic CLI structure with `clap`.
-- [ ] Integrate error handling with `anyhow`.
+- [x] Initialize Cargo project.
+- [x] Set up basic CLI structure with `clap`.
+- [x] Integrate error handling with `anyhow`.
 
 ## 2. Bit-level I/O Infrastructure
-- [ ] Implement `BitWriter` for writing individual bits to a stream.
-- [ ] Implement `BitReader` for reading individual bits from a stream.
-- [ ] Unit tests for bit-level operations.
+- [x] Implement `BitWriter` for writing individual bits to a stream.
+- [x] Implement `BitReader` for reading individual bits from a stream.
+- [x] Unit tests for bit-level operations.
 
 ## 3. Huffman Coding (Lossless Compression)
 - [ ] Frequency analysis of input data.
