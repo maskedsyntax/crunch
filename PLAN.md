@@ -24,18 +24,18 @@
 - [x] Support for multiple compression algorithms (selectable via CLI).
 
 ## 5. Multi-File Archiving
-- [x] Recursive directory traversal (basic implementation in Archiver).
+- [x] Recursive directory traversal.
 - [x] Metadata storage for file names, sizes, and relative paths.
 - [x] Archiving multiple files into a single `.crunch` file.
 
 ## 6. LZ77 (Dictionary-Based Compression)
-- [ ] Sliding window match finding.
-- [ ] Triplets encoding (Offset, Length, Literal).
-- [ ] Integration with Huffman (DEFLATE-lite) if time permits.
+- [x] Sliding window match finding.
+- [x] Reference vs. Literal encoding.
+- [x] Integration into the archiver.
 
 ## 7. Progress & Visualization
 - [x] Real-time progress bars using `indicatif`.
-- [ ] Terminal-based frequency visualization (histograms).
+- [x] Terminal-based frequency visualization (histograms).
 
 ## 8. Verification & Benchmarking
 - [x] Automatic checksum verification during decompression.
