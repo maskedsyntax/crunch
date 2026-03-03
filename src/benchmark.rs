@@ -25,7 +25,7 @@ pub fn run_benchmark<P: AsRef<Path>>(input: P) -> Result<BenchmarkResult> {
     // Benchmark Crunch (Huffman)
     let start_crunch = Instant::now();
     let temp_crunch = std::env::temp_dir().join("crunch_bench.crunch");
-    Archiver::compress_files(vec![path], &temp_crunch)?;
+    Archiver::compress_files(vec![path], &temp_crunch, "huffman")?;
     let crunch_time = start_crunch.elapsed();
     let crunch_size = std::fs::metadata(&temp_crunch)?.len();
 

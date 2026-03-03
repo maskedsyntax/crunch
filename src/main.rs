@@ -1,5 +1,6 @@
 mod bit_io;
 mod huffman;
+mod lz77;
 mod archive;
 mod benchmark;
 mod stats;
@@ -82,7 +83,7 @@ fn main() -> Result<()> {
                 p
             });
             println!("Compressing {:?} using {} algorithm...", input, algorithm);
-            archive::Archiver::compress_files(vec![input], out_path)?;
+            archive::Archiver::compress_files(vec![input], out_path, &algorithm)?;
         }
         Commands::Decompress { input, output } => {
             println!("Decompressing {:?}...", input);
@@ -91,7 +92,7 @@ fn main() -> Result<()> {
         }
         Commands::Archive { input, output } => {
             println!("Creating archive {:?} from {:?}...", output, input);
-            archive::Archiver::compress_files(input, output)?;
+            archive::Archiver::compress_files(input, output, "huffman")?;
         }
         Commands::List { input } => {
             println!("Listing contents of archive {:?}...", input);

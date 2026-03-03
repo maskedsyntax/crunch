@@ -6,6 +6,7 @@ use std::fs::File;
 use std::path::Path;
 use anyhow::{Result, anyhow};
 use crate::huffman::Huffman;
+use crate::lz77::LZ77;
 use crc32fast::Hasher;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -72,7 +73,7 @@ pub struct Archiver;
 use indicatif::{ProgressBar, ProgressStyle, MultiProgress};
 
 impl Archiver {
-    pub fn compress_files<P: AsRef<Path>>(inputs: Vec<P>, output: P) -> Result<()> {
+    pub fn compress_files<P: AsRef<Path>>(inputs: Vec<P>, output: P, algorithm: &str) -> Result<()> {
         let mut file_metas = Vec::new();
         let mut compressed_data = Vec::new();
         let mut all_files = Vec::new();
@@ -104,26 +105,36 @@ impl Archiver {
             hasher.update(&content);
             let checksum = hasher.finalize();
 
-            // Calculate frequencies
-            let mut frequencies = HashMap::new();
-            for &byte in &content {
-                *frequencies.entry(byte).or_insert(0) += 1;
-            }
-
-            let huffman_temp = Huffman::from_frequencies(frequencies);
-            let lengths = huffman_temp.get_code_lengths();
-            let huffman = Huffman::from_code_lengths(lengths.clone());
-
             let mut compressed_buf = Vec::new();
-            huffman.encode(&content[..], &mut compressed_buf)?;
+            let mut huffman_lengths = None;
+            let compression_type = match algorithm {
+                "huffman" => {
+                    let mut frequencies = HashMap::new();
+                    for &byte in &content {
+                        *frequencies.entry(byte).or_insert(0) += 1;
+                    }
+                    let huffman_temp = Huffman::from_frequencies(frequencies);
+                    let lengths = huffman_temp.get_code_lengths();
+                    let huffman = Huffman::from_code_lengths(lengths.clone());
+                    huffman.encode(&content[..], &mut compressed_buf)?;
+                    huffman_lengths = Some(lengths);
+                    CompressionType::Huffman
+                }
+                "lz77" => {
+                    let lz = LZ77::new(4096, 255);
+                    lz.encode(&content[..], &mut compressed_buf)?;
+                    CompressionType::LZ77
+                }
+                _ => return Err(anyhow!("Unsupported algorithm")),
+            };
 
             let meta = FileMetadata {
                 name: relative_name,
                 original_size,
                 compressed_size: compressed_buf.len() as u64,
                 checksum,
-                compression_type: CompressionType::Huffman,
-                huffman_lengths: Some(lengths),
+                compression_type,
+                huffman_lengths,
                 modified: full_path.metadata()?.modified().ok(),
             };
 
@@ -191,6 +202,20 @@ impl Archiver {
                     let mut decompressed_buf = Vec::new();
                     huffman.decode(&compressed_buf[..], &mut decompressed_buf, meta.original_size)?;
                     
+                    // Verify checksum
+                    let mut hasher = Hasher::new();
+                    hasher.update(&decompressed_buf);
+                    if hasher.finalize() != meta.checksum {
+                        return Err(anyhow!("Checksum mismatch for file: {}", meta.name));
+                    }
+
+                    out_file.write_all(&decompressed_buf)?;
+                }
+                CompressionType::LZ77 => {
+                    let lz = LZ77::new(4096, 255);
+                    let mut decompressed_buf = Vec::new();
+                    lz.decode(&compressed_buf[..], &mut decompressed_buf, meta.original_size)?;
+
                     // Verify checksum
                     let mut hasher = Hasher::new();
                     hasher.update(&decompressed_buf);
