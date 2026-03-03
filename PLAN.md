@@ -11,12 +11,12 @@
 - [x] Unit tests for bit-level operations.
 
 ## 3. Huffman Coding (Lossless Compression)
-- [ ] Frequency analysis of input data.
-- [ ] Huffman tree construction using a Priority Queue.
-- [ ] Code generation from the Huffman tree.
-- [ ] Encoding logic (Input -> Huffman Codes -> Bits).
-- [ ] Decoding logic (Bits -> Huffman Tree -> Original Data).
-- [ ] Canonical Huffman coding for efficient tree storage in the archive.
+- [x] Frequency analysis of input data.
+- [x] Huffman tree construction using a Priority Queue.
+- [x] Code generation from the Huffman tree.
+- [x] Encoding logic (Input -> Huffman Codes -> Bits).
+- [x] Decoding logic (Bits -> Huffman Tree -> Original Data).
+- [x] Canonical Huffman coding for efficient tree storage in the archive.
 
 ## 4. Archive Format & Metadata
 - [ ] Define the `crunch` file format (Header, Metadata, Compressed Data).

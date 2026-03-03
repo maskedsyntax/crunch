@@ -1,4 +1,5 @@
 mod bit_io;
+mod huffman;
 use clap::{Parser, Subcommand};
 use anyhow::Result;
 use std::path::PathBuf;
